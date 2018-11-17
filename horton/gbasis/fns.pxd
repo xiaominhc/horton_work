@@ -49,6 +49,21 @@ cdef extern from "horton/gbasis/fns.h":
     cdef cppclass GB1DMGridHessianFn:
         GB1DMGridHessianFn(long max_shell_type) except +
 
+    cdef cppclass GB1DMGridLaplacianFn:
+        GB1DMGridLaplacianFn(long max_shell_type) except +
+
+    cdef cppclass GB1DMGridGradofSqGradFn:
+        GB1DMGridLaplacianFn(long max_shell_type) except +
+
+    cdef cppclass GB1DMGridLapofSqGradFn:
+        GB1DMGridLaplacianFn(long max_shell_type) except +
+
+    cdef cppclass GB1DMGridNabla3Fn:
+        GB1DMGridNabla3Fn(long max_shell_type) except +
+
+    cdef cppclass GB1DMGridNabla4Fn:
+        GB1DMGridNabla4Fn(long max_shell_type) except +
+
     cdef cppclass GB1DMGridMGGAFn:
         GB1DMGridMGGAFn(long max_shell_type) except +
 

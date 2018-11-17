@@ -279,6 +279,7 @@ def test_density_gradient_n2_sto3g():
 
     points = np.zeros((1, 3), float)
     g = obasis.compute_grid_gradient_dm(dm_full, points)
+    print "error", g
     assert abs(g).max() < 1e-10
 
     eps = 1e-4
@@ -918,3 +919,23 @@ def test_mgga_functional_deriv_4():
 
 def test_mgga_functional_deriv_5():
     check_mgga_functional_deriv('test/water_sto3g_hf_g03.fchk', 5)
+
+
+def test_density_laplacian_h3_321g():
+    fn_fchk = context.get_fn('test/h3_hfs_321g.fchk')
+    mol = IOData.from_file(fn_fchk)
+    obasis = mol.obasis
+    dm_full = mol.get_dm_full()
+    eps = 1e-4
+    #point = np.array([0.5, -0.2, 0.7])
+    point = np.random.normal(0.0, 1.0, 3)
+    
+    #row = obasis.compute_grid_hessian_dm(dm_full, np.array([p]))[0]
+    row = obasis.compute_grid_hessian_dm(dm_full, np.array([point]))[0]
+    lap1 = row[0] 
+    lap1 += row[3] 
+    lap1 += row[5] 
+
+    lap2 = obasis.compute_grid_laplacian_dm(dm_full, np.array([point]))[0]
+    error = lap1 - lap2
+    assert error < eps

@@ -196,12 +196,13 @@ def test_grid_co_ccpv5z_pure_hf_density_some_points():
     ref[:,:3] *= angstrom
     check_grid_rho('test/co_ccpv5z_pure_hf_g03.fchk', ref, 3e-3)
 
-
 def check_grid_gradient(fn, ref, eps):
     mol = IOData.from_file(context.get_fn(fn))
     points = ref[:,:3].copy()
     dm_full = mol.get_dm_full()
     gradients = mol.obasis.compute_grid_gradient_dm(dm_full, points)
+    print "gradients", gradients
+    print "ref", ref[:,3:]
     assert abs(gradients - ref[:,3:]).max() < eps
 
 

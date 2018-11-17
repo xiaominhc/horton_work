@@ -32,6 +32,7 @@
 #include "horton/gbasis/common.h"
 #include "horton/gbasis/iter_gb.h"
 using std::abs;
+using std::cout;
 
 /*
 
@@ -179,16 +180,22 @@ void GBasis::compute_four_index(double* output, GB4Integral* integral) {
 
 void GBasis::compute_grid_point1(double* output, double* point, GB1GridFn* grid_fn) {
     IterGB1 iter = IterGB1(this);
+    //XHC Get data for first shell (shell counters start from 0)
     iter.update_shell();
     do {
+        //XHC Reset cartesian polynomials
         grid_fn->reset(iter.shell_type0, iter.r0, point);
+        //XHC Get data for first primitive (prim counters start from 0)
         iter.update_prim();
         do {
+            //XHC Evaluate functions of primitives on the grid point and adds it
             grid_fn->add(iter.con_coeff, iter.alpha0, iter.scales0);
-        } while (iter.inc_prim());
+        } while (iter.inc_prim()); //XHC Increase prim counters and update_prim
+        //XHC change to pure functions
         grid_fn->cart_to_pure();
+        //XHC Store results for one grid point
         iter.store(grid_fn->get_work(), output, grid_fn->get_dim_work());
-    } while (iter.inc_shell());
+    } while (iter.inc_shell()); //XHC Increase shell counters and update_shell
 }
 
 double GBasis::compute_grid_point2(double* dm, double* point, GB2DMGridFn* grid_fn) {
@@ -342,7 +349,11 @@ void GOBasis::compute_grid1_dm(double* dm, long npoint, double* points,
     // and optionally some of its derivatives.
     long nwork = get_nbasis()*grid_fn->get_dim_work();
     long dim_output = grid_fn->get_dim_output();
+    //XHC work_basis is the array of contracted functions evaluated in one 
+    //grid point
     double* work_basis = new double[nwork];
+        //printf("XHC entra a compute_grid1_dm \n");
+        //cout<<"XHC entra a compute_grid1_dm \n";
 
     for (long ipoint=0; ipoint < npoint; ipoint++) {
         // A) clear the basis functions.

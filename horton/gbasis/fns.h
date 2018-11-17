@@ -661,6 +661,346 @@ class GB1DMGridHessianFn : public GB1DMGridFn  {
 
 
 /** @brief
+      Compute density Laplacian on a grid: xx + yy + zz.
+
+    Content of work_basis (at one grid point):
+      [0] Basis function value.
+      [1] Basis function derivative toward x.
+      [2] Basis function derivative toward y.
+      [3] Basis function derivative toward z.
+      [4] Basis function derivative toward xx.
+      [5] Basis function derivative toward xy.
+      [6] Basis function derivative toward xz.
+      [7] Basis function derivative toward yy.
+      [8] Basis function derivative toward yz.
+      [9] Basis function derivative toward zz.
+    Content of the argument 'output' and the energy derivative in 'pot' (at one grid point):
+      [0] Sum of density derivatives toward xx, yy and zz.
+  */
+class GB1DMGridLaplacianFn : public GB1DMGridFn  {
+ public:
+  /** @brief
+        Construct a GB1DMGridLaplacianFn object.
+
+      @param max_shell_type
+        The maximum shell type in the basis set.
+    */
+  explicit GB1DMGridLaplacianFn(long max_shell_type)
+      : GB1DMGridFn(max_shell_type, 10, 1), poly_work{0.0}, offset(0),
+        offset_l1(0), offset_h1(0), offset_l2(0), offset_h2(0) {}
+
+  //! Reset calculator for a new contraction. (See base class for details.)
+  virtual void reset(long _shell_type0, const double* _r0, const double* _point);
+
+  /** @brief
+        Add contributions to work array for current grid point and given primitive shell.
+        (See base class for more details.)
+    */
+  virtual void add(double coeff, double alpha0, const double* scales0);
+
+  //! Compute the final result on one grid point. (See base class for details.)
+  virtual void compute_point_from_dm(double* work_basis, double* dm, long nbasis,
+                                     double* output, double epsilon, double* dmmaxrow);
+
+  //! Add contribution to Fock matrix for one grid point. (See base class for details.)
+  virtual void compute_fock_from_pot(double* pot, double* work_basis, long nbasis,
+                                     double* fock);
+
+ private:
+  double poly_work[MAX_NCART_CUMUL_DD];  //!< Work array with Cartesian polynomials.
+  long offset;     //!< Offset for the polynomials for the density.
+  long offset_l1;  //!< Lower offset for the polynomials for the gradient.
+  long offset_h1;  //!< Higher offset for the polynomials for the gradient.
+  long offset_l2;  //!< Lower offset for the polynomials for the hessian.
+  long offset_h2;  //!< Higher offset for the polynomials for the hessian.
+};
+
+
+/** @brief
+      Compute density GradofSqGrad on a grid: xx + yy + zz.
+
+    Content of work_basis (at one grid point):
+      [0] Basis function value.
+      [1] Basis function derivative toward x.
+      [2] Basis function derivative toward y.
+      [3] Basis function derivative toward z.
+      [4] Basis function derivative toward xx.
+      [5] Basis function derivative toward xy.
+      [6] Basis function derivative toward xz.
+      [7] Basis function derivative toward yy.
+      [8] Basis function derivative toward yz.
+      [9] Basis function derivative toward zz.
+    Content of the argument 'output' and the energy derivative in 'pot' (at one grid point):
+      [0] Sum of density derivatives toward xx, yy and zz.
+  */
+class GB1DMGridGradofSqGradFn : public GB1DMGridFn  {
+ public:
+  /** @brief
+        Construct a GB1DMGridGradofSqGradFn object.
+
+      @param max_shell_type
+        The maximum shell type in the basis set.
+    */
+  explicit GB1DMGridGradofSqGradFn(long max_shell_type)
+      : GB1DMGridFn(max_shell_type, 10, 3), poly_work{0.0}, offset(0),
+        offset_l1(0), offset_h1(0), offset_l2(0), offset_h2(0) {}
+
+  //! Reset calculator for a new contraction. (See base class for details.)
+  virtual void reset(long _shell_type0, const double* _r0, const double* _point);
+
+  /** @brief
+        Add contributions to work array for current grid point and given primitive shell.
+        (See base class for more details.)
+    */
+  virtual void add(double coeff, double alpha0, const double* scales0);
+
+  //! Compute the final result on one grid point. (See base class for details.)
+  virtual void compute_point_from_dm(double* work_basis, double* dm, long nbasis,
+                                     double* output, double epsilon, double* dmmaxrow);
+
+  //! Add contribution to Fock matrix for one grid point. (See base class for details.)
+  virtual void compute_fock_from_pot(double* pot, double* work_basis, long nbasis,
+                                     double* fock);
+
+ private:
+  double poly_work[MAX_NCART_CUMUL_DD];  //!< Work array with Cartesian polynomials.
+  long offset;     //!< Offset for the polynomials for the density.
+  long offset_l1;  //!< Lower offset for the polynomials for the gradient.
+  long offset_h1;  //!< Higher offset for the polynomials for the gradient.
+  long offset_l2;  //!< Lower offset for the polynomials for the hessian.
+  long offset_h2;  //!< Higher offset for the polynomials for the hessian.
+};
+
+
+/** @brief
+      Compute density LapofSqGrad on a grid: x, y, and z component.
+
+    Content of work_basis (at one grid point):
+      [0] Basis function value.
+      [1] Basis function derivative toward x.
+      [2] Basis function derivative toward y.
+      [3] Basis function derivative toward z.
+      [4] Basis function derivative toward xx.
+      [5] Basis function derivative toward xy.
+      [6] Basis function derivative toward xz.
+      [7] Basis function derivative toward yy.
+      [8] Basis function derivative toward yz.
+      [9] Basis function derivative toward zz.
+      [10] Basis function derivative toward xxx.
+      [11] Basis function derivative toward xxy.
+      [12] Basis function derivative toward xxz.
+      [13] Basis function derivative toward xyy.
+      [14] Basis function derivative toward xyz.
+      [15] Basis function derivative toward xzz.
+      [16] Basis function derivative toward yyy.
+      [17] Basis function derivative toward yyz.
+      [18] Basis function derivative toward yzz.
+      [19] Basis function derivative toward zzz.
+    Content of the argument 'output' and the energy derivative in 'pot' (at one grid point):
+      [0] x component of the third order nabla of the density.
+      [0] y component of the third order nabla of the density.
+      [0] z component of the third order nabla of the density.
+  */
+class GB1DMGridLapofSqGradFn : public GB1DMGridFn  {
+ public:
+  /** @brief
+        Construct a GB1DMGridLapofSqGradFn object.
+
+      @param max_shell_type
+        The maximum shell type in the basis set.
+    */
+  explicit GB1DMGridLapofSqGradFn(long max_shell_type)
+      : GB1DMGridFn(max_shell_type, 20, 3), poly_work{0.0}, offset(0),
+        offset_l1(0), offset_h1(0), offset_l2(0), offset_h2(0), 
+        offset_l3(0), offset_h3(0) {}
+
+  //! Reset calculator for a new contraction. (See base class for details.)
+  virtual void reset(long _shell_type0, const double* _r0, const double* _point);
+
+  /** @brief
+        Add contributions to work array for current grid point and given primitive shell.
+        (See base class for more details.)
+    */
+  virtual void add(double coeff, double alpha0, const double* scales0);
+
+  //! Compute the final result on one grid point. (See base class for details.)
+  virtual void compute_point_from_dm(double* work_basis, double* dm, long nbasis,
+                                     double* output, double epsilon, double* dmmaxrow);
+
+  //! Add contribution to Fock matrix for one grid point. (See base class for details.)
+  virtual void compute_fock_from_pot(double* pot, double* work_basis, long nbasis,
+                                     double* fock);
+
+ private:
+  double poly_work[MAX_NCART_CUMUL_DD];  //!< Work array with Cartesian polynomials.
+  long offset;     //!< Offset for the polynomials for the density.
+  long offset_l1;  //!< Lower offset for the polynomials for the gradient.
+  long offset_h1;  //!< Higher offset for the polynomials for the gradient.
+  long offset_l2;  //!< Lower offset for the polynomials for the hessian.
+  long offset_h2;  //!< Higher offset for the polynomials for the hessian.
+  long offset_l3;  //!< Lower offset for the polynomials for the third order nabla.
+  long offset_h3;  //!< Higher offset for the polynomials for the third order nabla.
+};
+
+
+/** @brief
+      Compute density Nabla3 on a grid: x, y, and z component.
+
+    Content of work_basis (at one grid point):
+      [0] Basis function value.
+      [1] Basis function derivative toward x.
+      [2] Basis function derivative toward y.
+      [3] Basis function derivative toward z.
+      [4] Basis function derivative toward xx.
+      [5] Basis function derivative toward xy.
+      [6] Basis function derivative toward xz.
+      [7] Basis function derivative toward yy.
+      [8] Basis function derivative toward yz.
+      [9] Basis function derivative toward zz.
+      [10] Basis function derivative toward xxx.
+      [11] Basis function derivative toward xxy.
+      [12] Basis function derivative toward xxz.
+      [13] Basis function derivative toward xyy.
+      [14] Basis function derivative toward xyz.
+      [15] Basis function derivative toward xzz.
+      [16] Basis function derivative toward yyy.
+      [17] Basis function derivative toward yyz.
+      [18] Basis function derivative toward yzz.
+      [19] Basis function derivative toward zzz.
+    Content of the argument 'output' and the energy derivative in 'pot' (at one grid point):
+      [0] x component of the third order nabla of the density.
+      [0] y component of the third order nabla of the density.
+      [0] z component of the third order nabla of the density.
+  */
+class GB1DMGridNabla3Fn : public GB1DMGridFn  {
+ public:
+  /** @brief
+        Construct a GB1DMGridNabla3Fn object.
+
+      @param max_shell_type
+        The maximum shell type in the basis set.
+    */
+  explicit GB1DMGridNabla3Fn(long max_shell_type)
+      : GB1DMGridFn(max_shell_type, 20, 3), poly_work{0.0}, offset(0),
+        offset_l1(0), offset_h1(0), offset_l2(0), offset_h2(0), 
+        offset_l3(0), offset_h3(0) {}
+
+  //! Reset calculator for a new contraction. (See base class for details.)
+  virtual void reset(long _shell_type0, const double* _r0, const double* _point);
+
+  /** @brief
+        Add contributions to work array for current grid point and given primitive shell.
+        (See base class for more details.)
+    */
+  virtual void add(double coeff, double alpha0, const double* scales0);
+
+  //! Compute the final result on one grid point. (See base class for details.)
+  virtual void compute_point_from_dm(double* work_basis, double* dm, long nbasis,
+                                     double* output, double epsilon, double* dmmaxrow);
+
+  //! Add contribution to Fock matrix for one grid point. (See base class for details.)
+  virtual void compute_fock_from_pot(double* pot, double* work_basis, long nbasis,
+                                     double* fock);
+
+ private:
+  double poly_work[MAX_NCART_CUMUL_DD];  //!< Work array with Cartesian polynomials.
+  long offset;     //!< Offset for the polynomials for the density.
+  long offset_l1;  //!< Lower offset for the polynomials for the gradient.
+  long offset_h1;  //!< Higher offset for the polynomials for the gradient.
+  long offset_l2;  //!< Lower offset for the polynomials for the hessian.
+  long offset_h2;  //!< Higher offset for the polynomials for the hessian.
+  long offset_l3;  //!< Lower offset for the polynomials for the third order nabla.
+  long offset_h3;  //!< Higher offset for the polynomials for the third order nabla.
+};
+
+
+/** @brief
+      Compute fourth order nabla of density on a grid: xxxx + xxyy + xxzz + yyyy + yyzz + zzzz.
+
+    Content of work_basis (at one grid point):
+      [0] Basis function value.
+      [1] Basis function derivative toward x.
+      [2] Basis function derivative toward y.
+      [3] Basis function derivative toward z.
+      [4] Basis function derivative toward xx.
+      [5] Basis function derivative toward xy.
+      [6] Basis function derivative toward xz.
+      [7] Basis function derivative toward yy.
+      [8] Basis function derivative toward yz.
+      [9] Basis function derivative toward zz.
+      [10] Basis function derivative toward xxx.
+      [11] Basis function derivative toward xxy.
+      [12] Basis function derivative toward xxz.
+      [13] Basis function derivative toward xyy.
+      [14] Basis function derivative toward xyz.
+      [15] Basis function derivative toward xzz.
+      [16] Basis function derivative toward yyy.
+      [17] Basis function derivative toward yyz.
+      [18] Basis function derivative toward yzz.
+      [19] Basis function derivative toward zzz.
+      [20] Basis function derivative toward xxxx.
+      [21] Basis function derivative toward xxxy.
+      [22] Basis function derivative toward xxxz.
+      [23] Basis function derivative toward xxyy.
+      [24] Basis function derivative toward xxyz.
+      [25] Basis function derivative toward xxzz.
+      [26] Basis function derivative toward xyyy.
+      [27] Basis function derivative toward xyyz.
+      [28] Basis function derivative toward xyzz.
+      [29] Basis function derivative toward xzzz.
+      [30] Basis function derivative toward yyyy.
+      [31] Basis function derivative toward yyyz.
+      [32] Basis function derivative toward yyzz.
+      [33] Basis function derivative toward yzzz.
+      [34] Basis function derivative toward zzzz.
+    Content of the argument 'output' and the energy derivative in 'pot' (at one grid point):
+      [0] Fourth order nabla of the density.
+  */
+class GB1DMGridNabla4Fn : public GB1DMGridFn  {
+ public:
+  /** @brief
+        Construct a GB1DMGridNabla4Fn object.
+
+      @param max_shell_type
+        The maximum shell type in the basis set.
+    */
+  explicit GB1DMGridNabla4Fn(long max_shell_type)
+      : GB1DMGridFn(max_shell_type, 35, 1), poly_work{0.0}, offset(0),
+        offset_l1(0), offset_h1(0), offset_l2(0), offset_h2(0),
+        offset_l3(0), offset_h3(0), offset_l4(0), offset_h4(0) {}
+
+  //! Reset calculator for a new contraction. (See base class for details.)
+  virtual void reset(long _shell_type0, const double* _r0, const double* _point);
+
+  /** @brief
+        Add contributions to work array for current grid point and given primitive shell.
+        (See base class for more details.)
+    */
+  virtual void add(double coeff, double alpha0, const double* scales0);
+
+  //! Compute the final result on one grid point. (See base class for details.)
+  virtual void compute_point_from_dm(double* work_basis, double* dm, long nbasis,
+                                     double* output, double epsilon, double* dmmaxrow);
+
+  //! Add contribution to Fock matrix for one grid point. (See base class for details.)
+  virtual void compute_fock_from_pot(double* pot, double* work_basis, long nbasis,
+                                     double* fock);
+
+ private:
+  double poly_work[MAX_NCART_CUMUL_DD];  //!< Work array with Cartesian polynomials.
+  long offset;     //!< Offset for the polynomials for the density.
+  long offset_l1;  //!< Lower offset for the polynomials for the gradient.
+  long offset_h1;  //!< Higher offset for the polynomials for the gradient.
+  long offset_l2;  //!< Lower offset for the polynomials for the hessian.
+  long offset_h2;  //!< Higher offset for the polynomials for the hessian.
+  long offset_l3;  //!< Lower offset for the polynomials for the third order nabla.
+  long offset_h3;  //!< Higher offset for the polynomials for the third order nabla.
+  long offset_l4;  //!< Lower offset for the polynomials for the fourth order nabla.
+  long offset_h4;  //!< Higher offset for the polynomials for the fourth order nabla.
+};
+
+
+/** @brief
       Compute MGGA properties on a grid: density, gradient, laplacian and kinetic energy
       density.
 

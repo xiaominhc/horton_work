@@ -71,6 +71,7 @@ __all__ = [
     # fns
     'GB1DMGridDensityFn', 'GB1DMGridGradientFn', 'GB1DMGridGGAFn',
     'GB1DMGridKineticFn', 'GB1DMGridHessianFn', 'GB1DMGridMGGAFn',
+    'GB1DMGridLaplacianFn', 'GB1DMGridNabla3Fn', 'GB1DMGridNabla4Fn',
     # iter_gb
     'IterGB1', 'IterGB2', 'IterGB4',
     # iter_pow
@@ -1201,6 +1202,7 @@ cdef class GOBasis(GBasis):
             &dm[0, 0], npoint, &points[0, 0], grid_fn._this, &output[0, 0], epsilon,
             &dmmaxrow[0])
 
+    #XHC define the function used in python input
     def compute_grid_density_dm(self, double[:, ::1] dm not None,
                                 double[:, ::1] points not None, double[::1] output=None,
                                 double epsilon=0):
@@ -1226,10 +1228,14 @@ cdef class GOBasis(GBasis):
         output : np.ndarray, shape=(npoint,), dtype=float
             The output array.
         """
+        #XHC Fill output with zeros
         if output is None:
             output = np.zeros(points.shape[0])
+        #XHC Calculate the function
+        #log( 'XHC entra a compute_grid_density_dm')
         self._compute_grid1_dm(dm, points, GB1DMGridDensityFn(self.max_shell_type),
                                output[:, None], epsilon)
+        #XHC Return output
         return np.asarray(output)
 
     def compute_grid_gradient_dm(self, double[:, ::1] dm not None,
@@ -1343,6 +1349,97 @@ cdef class GOBasis(GBasis):
         if output is None:
             output = np.zeros((points.shape[0], 6), float)
         self._compute_grid1_dm(dm, points, GB1DMGridHessianFn(self.max_shell_type), output)
+        return np.asarray(output)
+
+    def compute_grid_laplacian_dm(self, double[:, ::1] dm not None,
+                                double[:, ::1] points not None, double[::1] output=None):
+        """Compute the electron density Laplacian on a grid for a given density matrix.
+
+        **Warning:** the results are added to the output array! This may be useful to
+        combine results from different spin components.
+
+        Parameters
+        ----------
+        dm : np.ndarray, shape=(nbasis, nbasis), dtype=float
+            Density matrix, assumed to be symmetric.
+        points : np.ndarray, shape=(npoint, 3), dtype=float
+            Cartesian grid points.
+        output : np.ndarray, shape=(npoint,), dtype=float
+            Output array. When not given, it is allocated and returned. The columns are
+            assigned as follows:
+
+            * 0: value of Laplacian
+
+        Returns
+        -------
+        output : np.ndarray, shape=(npoint,), dtype=float
+            The output array.
+        """
+        if output is None:
+            #output = np.zeros((points.shape[0], 1), float)
+            output = np.zeros(points.shape[0])
+        self._compute_grid1_dm(dm, points, GB1DMGridLaplacianFn(self.max_shell_type), output[:, None])
+        return np.asarray(output)
+
+    def compute_grid_nabla3_dm(self, double[:, ::1] dm not None,
+                                double[:, ::1] points not None, double[:, ::1] output=None):
+        """Compute third order nabla of electron density on a grid for a given density matrix.
+
+        **Warning:** the results are added to the output array! This may be useful to
+        combine results from different spin components.
+
+        Parameters
+        ----------
+        dm : np.ndarray, shape=(nbasis, nbasis), dtype=float
+            Density matrix, assumed to be symmetric.
+        points : np.ndarray, shape=(npoint, 3), dtype=float
+            Cartesian grid points.
+        output : np.ndarray, shape=(npoint, 3), dtype=float
+            Output array. When not given, it is allocated and returned. The columns are
+            assigned as follows:
+
+            * 0: value of Nabla3 on x direction
+            * 1: value of Nabla3 on y direction
+            * 2: value of Nabla3 on z direction
+
+        Returns
+        -------
+        output : np.ndarray, shape=(npoint, 3), dtype=float
+            The output array.
+        """
+        if output is None:
+            output = np.zeros((points.shape[0], 3), float)
+        self._compute_grid1_dm(dm, points, GB1DMGridNabla3Fn(self.max_shell_type), output)
+        return np.asarray(output)
+
+    def compute_grid_nabla4_dm(self, double[:, ::1] dm not None,
+                                double[:, ::1] points not None, double[::1] output=None):
+        """Compute the fourth order nabla of electron density on a grid for a given density matrix.
+
+        **Warning:** the results are added to the output array! This may be useful to
+        combine results from different spin components.
+
+        Parameters
+        ----------
+        dm : np.ndarray, shape=(nbasis, nbasis), dtype=float
+            Density matrix, assumed to be symmetric.
+        points : np.ndarray, shape=(npoint, 3), dtype=float
+            Cartesian grid points.
+        output : np.ndarray, shape=(npoint,), dtype=float
+            Output array. When not given, it is allocated and returned. The columns are
+            assigned as follows:
+
+            * 0: value of Nabla4
+
+        Returns
+        -------
+        output : np.ndarray, shape=(npoint,), dtype=float
+            The output array.
+        """
+        if output is None:
+            #output = np.zeros((points.shape[0], 1), float)
+            output = np.zeros(points.shape[0])
+        self._compute_grid1_dm(dm, points, GB1DMGridNabla4Fn(self.max_shell_type), output[:, None])
         return np.asarray(output)
 
     def compute_grid_mgga_dm(self, double[:, ::1] dm not None,
@@ -2116,6 +2213,21 @@ cdef class GB1DMGridKineticFn(GB1DMGridFn):
 cdef class GB1DMGridHessianFn(GB1DMGridFn):
     def __cinit__(self, long max_nbasis):
         self._this = <fns.GB1DMGridFn*>(new fns.GB1DMGridHessianFn(max_nbasis))
+
+
+cdef class GB1DMGridLaplacianFn(GB1DMGridFn):
+    def __cinit__(self, long max_nbasis):
+        self._this = <fns.GB1DMGridFn*>(new fns.GB1DMGridLaplacianFn(max_nbasis))
+
+
+cdef class GB1DMGridNabla3Fn(GB1DMGridFn):
+    def __cinit__(self, long max_nbasis):
+        self._this = <fns.GB1DMGridFn*>(new fns.GB1DMGridNabla3Fn(max_nbasis))
+
+
+cdef class GB1DMGridNabla4Fn(GB1DMGridFn):
+    def __cinit__(self, long max_nbasis):
+        self._this = <fns.GB1DMGridFn*>(new fns.GB1DMGridNabla4Fn(max_nbasis))
 
 
 cdef class GB1DMGridMGGAFn(GB1DMGridFn):
