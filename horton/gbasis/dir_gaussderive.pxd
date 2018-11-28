@@ -21,5 +21,5 @@
 
 
 cdef extern from "horton/gbasis/dir_gaussderive.h":
-    void dir_gaussian_derivative(double* r, double* atom, long int* n, double alpha0, double scales0, int derx, int dery, int derz)
+    double dir_gaussian_derivative(double* r, double* atom, long int* n, double alpha0, double scales0, int derx, int dery, int derz) except +
     #void dir_gaussian_derivative(double* poly_work, long int* n, double alpha, double scales0, int derx, int dery, int derz)

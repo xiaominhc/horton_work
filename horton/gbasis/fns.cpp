@@ -1169,6 +1169,9 @@ void GB1DMGridLapofSqGradFn::compute_point_from_dm(double* work_basis, double* d
     rho_z += tmp_z*lap_ao;
  
   }
+  /*output = 2*rho_x;
+  output += 2*rho_y;
+  output += 2*rho_z;*/
   output[0] += 2*rho_x;
   output[1] += 2*rho_y;
   output[2] += 2*rho_z;

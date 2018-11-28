@@ -37,6 +37,7 @@ double dir_gaussian_derivative(const double* r, const double* atom, long int* n,
         Value of the specified derivative of the gaussian function.
     """*/
     int order = derx + dery + derz;
+    //printf("hola si entro");
  
     // Evaluate distance between point and nucleus
     double poly[4];
@@ -239,6 +240,6 @@ double dir_gaussian_derivative(const double* r, const double* atom, long int* n,
     if (order==0) {
       result = work_cart[offset[0]];
     }
-        
+    printf("result=%f\n",result);
     return result;
 }

@@ -926,7 +926,7 @@ def test_density_laplacian_h3_321g():
     mol = IOData.from_file(fn_fchk)
     obasis = mol.obasis
     dm_full = mol.get_dm_full()
-    eps = 1e-4
+    eps = 1e-6
     #point = np.array([0.5, -0.2, 0.7])
     point = np.random.normal(0.0, 1.0, 3)
     
@@ -939,3 +939,29 @@ def test_density_laplacian_h3_321g():
     lap2 = obasis.compute_grid_laplacian_dm(dm_full, np.array([point]))[0]
     error = lap1 - lap2
     assert error < eps
+    #print lap1
+    #print lap2
+    #assert 1==0 
+
+
+def test_density_gradofsqgrad_h3_321g():
+    fn_fchk = context.get_fn('test/h3_hfs_321g.fchk')
+    mol = IOData.from_file(fn_fchk)
+    obasis = mol.obasis
+    dm_full = mol.get_dm_full()
+    eps = 1e-6
+    #point = np.array([0.5, -0.2, 0.7])
+    point = np.random.normal(0.0, 1.0, 3)
+    
+    #row = obasis.compute_grid_hessian_dm(dm_full, np.array([p]))[0]
+    row = obasis.compute_grid_hessian_dm(dm_full, np.array([point]))[0]
+    lap1 = row[0] 
+    lap1 += row[3] 
+    lap1 += row[5] 
+
+    lap2 = obasis.compute_grid_laplacian_dm(dm_full, np.array([point]))[0]
+    error = lap1 - lap2
+    assert error < eps
+    #print lap1
+    #print lap2
+    #assert 1==0 
