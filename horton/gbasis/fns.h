@@ -810,7 +810,7 @@ class GB1DMGridLapofSqGradFn : public GB1DMGridFn  {
         The maximum shell type in the basis set.
     */
   explicit GB1DMGridLapofSqGradFn(long max_shell_type)
-      : GB1DMGridFn(max_shell_type, 20, 3), poly_work{0.0}, offset(0),
+      : GB1DMGridFn(max_shell_type, 20, 1), poly_work{0.0}, offset(0),
         offset_l1(0), offset_h1(0), offset_l2(0), offset_h2(0), 
         offset_l3(0), offset_h3(0) {}
 

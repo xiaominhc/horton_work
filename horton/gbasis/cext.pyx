@@ -1413,7 +1413,9 @@ cdef class GOBasis(GBasis):
 
 
     def compute_grid_lapofsqgrad_dm(self, double[:, ::1] dm not None,
-                                double[:, ::1] points not None, double[:, ::1] output=None):
+                                double[:, ::1] points not None, double[::1] output=None):
+    #def compute_grid_lapofsqgrad_dm(self, double[:, ::1] dm not None,
+    #                            double[:, ::1] points not None, double[:, ::1] output=None):
         """Compute the electron density Laplacian on a grid for a given density matrix.
 
         **Warning:** the results are added to the output array! This may be useful to
@@ -1437,8 +1439,11 @@ cdef class GOBasis(GBasis):
             The output array.
         """
         if output is None:
-            output = np.zeros((points.shape[0], 3), float)
-        self._compute_grid1_dm(dm, points, GB1DMGridLapofSqGradFn(self.max_shell_type), output)
+            #output = np.zeros((points.shape[0], 3), float)
+            #output = np.zeros((points.shape[0], 1), float)
+            output = np.zeros(points.shape[0])
+        #self._compute_grid1_dm(dm, points, GB1DMGridLapofSqGradFn(self.max_shell_type), output)
+        self._compute_grid1_dm(dm, points, GB1DMGridLapofSqGradFn(self.max_shell_type), output[:, None])
         return np.asarray(output)
 
     def compute_grid_nabla3_dm(self, double[:, ::1] dm not None,

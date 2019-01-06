@@ -356,14 +356,21 @@ void GB1DMGridGradientFn::compute_point_from_dm(double* work_basis, double* dm,
     double row = 0;
     for (long ibasis1=0; ibasis1 < nbasis; ibasis1++) {
       row += work_basis[ibasis1*4]*dm[ibasis0*nbasis+ibasis1];
+      //printf("density = %f * %f = %f \n", work_basis[ibasis1*4], dm[ibasis0*nbasis+ibasis1], row);
     }
     rho_x += row*work_basis[ibasis0*4+1];
+    //printf("rho_x = %f * %f = %f \n", row, work_basis[ibasis0*4+1], rho_x);
     rho_y += row*work_basis[ibasis0*4+2];
+    //printf("rho_y = %f * %f = %f \n", row, work_basis[ibasis0*4+2], rho_y);
     rho_z += row*work_basis[ibasis0*4+3];
+    //printf("rho_z = %f * %f = %f \n", row, work_basis[ibasis0*4+3], rho_z);
   }
   output[0] += 2*rho_x;
+  //printf("output[0] =%f \n", output[0]);
   output[1] += 2*rho_y;
+  //printf("output[1] =%f \n", output[1]);
   output[2] += 2*rho_z;
+  //printf("output[2] =%f \n", output[2]);
 }
 
 void GB1DMGridGradientFn::compute_fock_from_pot(double* pot, double* work_basis,
@@ -746,7 +753,9 @@ void GB1DMGridLaplacianFn::add(double coeff, double alpha0, const double* scales
     work_cart[10*i1p.ibasis0+3] += dir_gaussian_derivative(r0, point, i1p.n0, alpha0, coeff*scales0[i1p.ibasis0], 0, 0, 1);
 
     // Basis function derived toward xx
+    //printf("work_cart before = %f\n", work_cart[10*i1p.ibasis0+4]);
     work_cart[10*i1p.ibasis0+4] += dir_gaussian_derivative(r0, point, i1p.n0, alpha0, coeff*scales0[i1p.ibasis0], 2, 0, 0);
+    //printf("work_cart after = %f\n", work_cart[10*i1p.ibasis0+4]);
 
     // Basis function derived toward xy
     work_cart[10*i1p.ibasis0+5] += dir_gaussian_derivative(r0, point, i1p.n0, alpha0, coeff*scales0[i1p.ibasis0], 1, 1, 0);
@@ -755,13 +764,17 @@ void GB1DMGridLaplacianFn::add(double coeff, double alpha0, const double* scales
     work_cart[10*i1p.ibasis0+6] += dir_gaussian_derivative(r0, point, i1p.n0, alpha0, coeff*scales0[i1p.ibasis0], 1, 0, 1);
 
     // Basis function derived toward yy
+    //printf("work_cart before = %f\n", work_cart[10*i1p.ibasis0+7]);
     work_cart[10*i1p.ibasis0+7] += dir_gaussian_derivative(r0, point, i1p.n0, alpha0, coeff*scales0[i1p.ibasis0], 0, 2, 0);
+    //printf("work_cart after = %f\n", work_cart[10*i1p.ibasis0+7]);
 
     // Basis function derived toward yz
     work_cart[10*i1p.ibasis0+8] += dir_gaussian_derivative(r0, point, i1p.n0, alpha0, coeff*scales0[i1p.ibasis0], 0, 1, 1);
 
     // Basis function derived toward zz
+    //printf("work_cart before = %f\n", work_cart[10*i1p.ibasis0+9]);
     work_cart[10*i1p.ibasis0+9] += dir_gaussian_derivative(r0, point, i1p.n0, alpha0, coeff*scales0[i1p.ibasis0], 0, 0, 2);
+    //printf("work_cart after = %f\n", work_cart[10*i1p.ibasis0+9]);
   } while (i1p.inc());
 }
 
@@ -774,29 +787,43 @@ void GB1DMGridLaplacianFn::compute_point_from_dm(double* work_basis, double* dm,
   double rho_yy = 0;//, rho_yz = 0, rho_zz = 0;
   double rho_zz = 0;
   //XHC Atomic Orbital b
+  //printf("entra a suma\n");
   for (long ibasis0=0; ibasis0 < nbasis; ibasis0++) {
+    //printf("entra a primer loop\n");
     double row = 0;
     double tmp_x = 0;
     double tmp_y = 0;
     double tmp_z = 0;
     //XHC Atomic Orbital a
     for (long ibasis1=0; ibasis1 < nbasis; ibasis1++) {
+      //printf("entra a segundo loop\n");
       //XHC row only has one value (scalar) and tmp has 3 (gradient is vector)
       row += work_basis[ibasis1*10]*dm[ibasis0*nbasis+ibasis1];
+      //printf("density=%f*%f=%f\n", work_basis[ibasis1*10], dm[ibasis0*nbasis+ibasis1], row);
       tmp_x += work_basis[ibasis1*10+1]*dm[ibasis0*nbasis+ibasis1];
+      //printf("gradx=%f*%f=%f\n", work_basis[ibasis1*10+1], dm[ibasis0*nbasis+ibasis1], tmp_x);
       tmp_y += work_basis[ibasis1*10+2]*dm[ibasis0*nbasis+ibasis1];
+      //printf("grady=%f*%f=%f\n", work_basis[ibasis1*10+2], dm[ibasis0*nbasis+ibasis1], tmp_y);
       tmp_z += work_basis[ibasis1*10+3]*dm[ibasis0*nbasis+ibasis1];
+      //printf("gradz=%f*%f=%f\n", work_basis[ibasis1*10+3], dm[ibasis0*nbasis+ibasis1], tmp_z);
     }
     rho_xx += row*work_basis[ibasis0*10+4] + tmp_x*work_basis[ibasis0*10+1];
+    //printf("x=%f*%f+%f*%f=%f\n", row, work_basis[ibasis0*10+4], tmp_x, work_basis[ibasis0*10+1], rho_xx);
     //rho_xy += row*work_basis[ibasis0*10+5] + tmp_x*work_basis[ibasis0*10+2];
     //rho_xz += row*work_basis[ibasis0*10+6] + tmp_x*work_basis[ibasis0*10+3];
     rho_yy += row*work_basis[ibasis0*10+7] + tmp_y*work_basis[ibasis0*10+2];
+    //printf("y=%f*%f+%f*%f=%f\n", row, work_basis[ibasis0*10+7], tmp_y, work_basis[ibasis0*10+2], rho_yy);
     //rho_yz += row*work_basis[ibasis0*10+8] + tmp_y*work_basis[ibasis0*10+3];
     rho_zz += row*work_basis[ibasis0*10+9] + tmp_z*work_basis[ibasis0*10+3];
+    //printf("z=%f*%f+%f*%f=%f\n", row, work_basis[ibasis0*10+9], tmp_z, work_basis[ibasis0*10+3], rho_zz);
   }
+  //printf("before laprho=%f\n", *output);
   *output += 2*rho_xx;
+  //printf("sumx laprho=%f\n", *output);
   *output += 2*rho_yy;
+  //printf("sumy laprho=%f\n", *output);
   *output += 2*rho_zz;
+  //printf("sumz laprho=%f\n", *output);
   //output[1] += 2*rho_xy;
   //output[2] += 2*rho_xz;
   //output[3] += 2*rho_yy;
@@ -908,10 +935,10 @@ void GB1DMGridGradofSqGradFn::compute_point_from_dm(double* work_basis, double* 
   double factor_x = 0, x_term = 0;
   double factor_y = 0, y_term = 0;
   double factor_z = 0, z_term = 0;
-  double tmp_ab = 0, tmp_cd = 0;
+  //double tmp_ab = 0, tmp_cd = 0;
   //XHC Atomic Orbital d
   for (long ibasis0=0; ibasis0 < nbasis; ibasis0++) {
-    //double tmp = 0;
+    double tmp_cd = 0;
     //XHC Atomic Orbital c
     for (long ibasis1=0; ibasis1 < nbasis; ibasis1++) {
       tmp_cd += work_basis[ibasis1*10]*dm[ibasis0*nbasis+ibasis1];
@@ -923,7 +950,7 @@ void GB1DMGridGradofSqGradFn::compute_point_from_dm(double* work_basis, double* 
   //XHC Atomic Orbital b
   for (long ibasis2=0; ibasis2 < nbasis; ibasis2++) {
     //double tmp = 0, tmp_x = 0, tmp_y = 0, tmp_z = 0;
-    double tmp_x = 0, tmp_y = 0, tmp_z = 0;
+    double tmp_x = 0, tmp_y = 0, tmp_z = 0, tmp_ab = 0;
     //XHC Atomic Orbital a
     for (long ibasis3=0; ibasis3 < nbasis; ibasis3++) {
       tmp_ab += work_basis[ibasis3*10]*dm[ibasis2*nbasis+ibasis3];
@@ -1076,109 +1103,162 @@ void GB1DMGridLapofSqGradFn::add(double coeff, double alpha0, const double* scal
 void GB1DMGridLapofSqGradFn::compute_point_from_dm(double* work_basis, double* dm,
                                                long nbasis, double* output,
                                                double epsilon, double* dmmaxrow) {
-  // The density Nabla3 is computed in `point` using the results in work_basis (basis
+  // The Laplacian of the square of the gradient of the density is computed in `point` using the results in work_basis (basis
   // function values and their first and second derivatives).
-  double rho_x = 0, rho_y = 0, rho_z = 0;
-  //double rho_xx, rho_yy, rho_zz;
-  double tmp_x = 0, tmp_y = 0, tmp_z = 0;
-  //double nabla3_x_ao, nabla3_y_ao, nabla3_z_ao;
-  double tmp = 0, tmp_0 = 0, tmp_x2 = 0;
-  double tmp_y2 = 0, tmp_z2 = 0;
-  double factor_0x, factor_xx, factor_xy, factor_xz;
-  double factor_0y, factor_yx, factor_yy, factor_yz;
-  double factor_0z, factor_zx, factor_zy, factor_zz;
-  double factor_0_x2, factor_0_x3, factor_x_x, factor_x_x2;
-  double factor_x2_x, factor_0_xy, factor_0_x2y, factor_x_y;
-  double factor_x_xy, factor_x2_y, factor_0_xz, factor_0_x2z;
-  double factor_x_z, factor_x_xz, factor_x2_z, factor_0_xy2;
-  double factor_y_x, factor_y_xy, factor_y2_x, factor_z0;
-  double lap_ao;
+  double result = 0;
+  double factor_0x = 0, factor_xx = 0, factor_xy = 0, factor_xz = 0;
+  double factor_0y = 0, factor_yx = 0, factor_yy = 0, factor_yz = 0;
+  double factor_0z = 0, factor_zx = 0, factor_zy = 0, factor_zz = 0;
+  double factor_0_x2, factor_0_xy, factor_0_xz;
+  double factor_0_y2, factor_0_yz, factor_0_z2;
+  double factor_0_x3, factor_0_x2y, factor_0_x2z, factor_0_xy2, factor_0_xz2;
+  double factor_0_y3, factor_0_y2z, factor_0_yz2, factor_0_z3;
+  double factor_x_x, factor_x_y, factor_x_z;
+  double factor_y_x, factor_y_y, factor_y_z;
+  double factor_z_x, factor_z_y, factor_z_z;
+  double factor_x_x2, factor_x_xy, factor_x_xz;
+  double factor_y_xy, factor_y_y2, factor_y_yz;
+  double factor_z_xz, factor_z_yz, factor_z_z2;
+  double factor_x2_x, factor_x2_y, factor_x2_z;
+  double factor_y2_x, factor_y2_y, factor_y2_z;
+  double factor_z2_x, factor_z2_y, factor_z2_z;
+  double tmp, tmp_x, tmp_y, tmp_z;
+  double tmp_x2, tmp_y2, tmp_z2;
+
   //XHC Atomic Orbital d
-  for (long ibasis0=0; ibasis0 < nbasis; ibasis0++) {
-    double tmp = 0;
+  for (long ibasis2=0; ibasis2 < nbasis; ibasis2++) {
+    tmp = 0;
+    tmp_x = 0;
+    tmp_y = 0;
+    tmp_z = 0;
     //XHC Atomic Orbital c
-    for (long ibasis1=0; ibasis1 < nbasis; ibasis1++) {
+    for (long ibasis3=0; ibasis3 < nbasis; ibasis3++) {
       //XHC row only has one value (scalar) and tmp has 3 (gradient is vector)
-      tmp += work_basis[ibasis1*20]*dm[ibasis0*nbasis+ibasis1];
-      tmp_x += work_basis[ibasis1*20+1]*dm[ibasis0*nbasis+ibasis1];
-      tmp_y += work_basis[ibasis1*20+2]*dm[ibasis0*nbasis+ibasis1];
-      tmp_z += work_basis[ibasis1*20+3]*dm[ibasis0*nbasis+ibasis1];
+      tmp += work_basis[ibasis3*20]*dm[ibasis2*nbasis+ibasis3];
+      tmp_x += work_basis[ibasis3*20+1]*dm[ibasis2*nbasis+ibasis3];
+      tmp_y += work_basis[ibasis3*20+2]*dm[ibasis2*nbasis+ibasis3];
+      tmp_z += work_basis[ibasis3*20+3]*dm[ibasis2*nbasis+ibasis3];
     }
-    factor_0x += tmp*work_basis[ibasis0*20+1];
-    factor_xx += tmp_x*work_basis[ibasis0*20+1] + tmp*work_basis[ibasis0*20+4];
-    factor_xy += tmp_x*work_basis[ibasis0*20+2] + tmp*work_basis[ibasis0*20+5];
-    factor_xz += tmp_x*work_basis[ibasis0*20+3] + tmp*work_basis[ibasis0*20+6];
-    factor_0y += tmp*work_basis[ibasis0*20+2];
-    factor_yx += tmp_y*work_basis[ibasis0*20+1] + tmp*work_basis[ibasis0*20+5];
-    factor_yy += tmp_y*work_basis[ibasis0*20+2] + tmp*work_basis[ibasis0*20+7];
-    factor_yz += tmp_y*work_basis[ibasis0*20+3] + tmp*work_basis[ibasis0*20+8];
-    factor_0z += tmp*work_basis[ibasis0*20+3];
-    factor_zx += tmp_z*work_basis[ibasis0*20+1] + tmp*work_basis[ibasis0*20+6];
-    factor_zy += tmp_z*work_basis[ibasis0*20+2] + tmp*work_basis[ibasis0*20+8];
-    factor_zz += tmp_z*work_basis[ibasis0*20+3] + tmp*work_basis[ibasis0*20+9];
+    factor_0x += tmp*work_basis[ibasis2*20+1];
+    factor_xx += tmp_x*work_basis[ibasis2*20+1] + tmp*work_basis[ibasis2*20+4];
+    factor_xy += tmp_x*work_basis[ibasis2*20+2] + tmp*work_basis[ibasis2*20+5];
+    factor_xz += tmp_x*work_basis[ibasis2*20+3] + tmp*work_basis[ibasis2*20+6];
+    factor_0y += tmp*work_basis[ibasis2*20+2];
+    factor_yx += tmp_y*work_basis[ibasis2*20+1] + tmp*work_basis[ibasis2*20+5];
+    factor_yy += tmp_y*work_basis[ibasis2*20+2] + tmp*work_basis[ibasis2*20+7];
+    factor_yz += tmp_y*work_basis[ibasis2*20+3] + tmp*work_basis[ibasis2*20+8];
+    factor_0z += tmp*work_basis[ibasis2*20+3];
+    factor_zx += tmp_z*work_basis[ibasis2*20+1] + tmp*work_basis[ibasis2*20+6];
+    factor_zy += tmp_z*work_basis[ibasis2*20+2] + tmp*work_basis[ibasis2*20+8];
+    factor_zz += tmp_z*work_basis[ibasis2*20+3] + tmp*work_basis[ibasis2*20+9];
   }
   //XHC Atomic Orbital b
   for (long ibasis0=0; ibasis0 < nbasis; ibasis0++) {
-    //double row = 0;
+    tmp_x = 0;
+    tmp_y = 0;
+    tmp_z = 0;
+    tmp = 0;
+    tmp_x2 = 0;
+    tmp_y2 = 0;
+    tmp_z2 = 0;
     //XHC Atomic Orbital a
     for (long ibasis1=0; ibasis1 < nbasis; ibasis1++) {
       //XHC row only has one value (scalar) and tmp has 3 (gradient is vector)
       //XHC P_ab*AO_a
-      tmp_0 += work_basis[ibasis1*20]*dm[ibasis0*nbasis+ibasis1];
+      tmp += work_basis[ibasis1*20]*dm[ibasis0*nbasis+ibasis1];
       tmp_x += work_basis[ibasis1*20+1]*dm[ibasis0*nbasis+ibasis1];
-      tmp_x2 += work_basis[ibasis1*20+4]*dm[ibasis0*nbasis+ibasis1];
       tmp_y += work_basis[ibasis1*20+2]*dm[ibasis0*nbasis+ibasis1];
-      tmp_y2 += work_basis[ibasis1*20+7]*dm[ibasis0*nbasis+ibasis1];
       tmp_z += work_basis[ibasis1*20+3]*dm[ibasis0*nbasis+ibasis1];
+      tmp_x2 += work_basis[ibasis1*20+4]*dm[ibasis0*nbasis+ibasis1];
+      tmp_y2 += work_basis[ibasis1*20+7]*dm[ibasis0*nbasis+ibasis1];
       tmp_z2 += work_basis[ibasis1*20+9]*dm[ibasis0*nbasis+ibasis1];
     } 
     //XHC First term P_ab*AO_a*nabla3_AO_b
-    factor_0_x2 += tmp*work_basis[ibasis0*20+1];
-    factor_0_x3 += tmp*work_basis[ibasis0*20+1];
-    factor_x_x += tmp_x*work_basis[ibasis0*20+1] + tmp*work_basis[ibasis0*20+4];
-    factor_x_x2 += 2.0*tmp_x*work_basis[ibasis0*20+1] + tmp*work_basis[ibasis0*20+4];
-    factor_x2_x += tmp_x*work_basis[ibasis0*20+1] + tmp*work_basis[ibasis0*20+4];
+    factor_0_x2 = tmp*work_basis[ibasis0*20+4];
+    factor_0_xy = tmp*work_basis[ibasis0*20+5];
+    factor_0_xz = tmp*work_basis[ibasis0*20+6];
+    factor_0_y2 = tmp*work_basis[ibasis0*20+7];
+    factor_0_yz = tmp*work_basis[ibasis0*20+8];
+    factor_0_z2 = tmp*work_basis[ibasis0*20+9];
 
-    factor_0_xy += tmp_x*work_basis[ibasis0*20+2] + tmp*work_basis[ibasis0*20+5];
-    factor_0_x2y += tmp_x*work_basis[ibasis0*20+2] + tmp*work_basis[ibasis0*20+5];
-    factor_x_y += tmp_x*work_basis[ibasis0*20+2] + tmp*work_basis[ibasis0*20+5];
-    factor_x_xy += tmp_x*work_basis[ibasis0*20+2] + tmp*work_basis[ibasis0*20+5];
-    factor_x2_y += tmp_x*work_basis[ibasis0*20+2] + tmp*work_basis[ibasis0*20+5];
+    factor_0_x3 = tmp*work_basis[ibasis0*20+10];
+    factor_0_x2y = tmp*work_basis[ibasis0*20+11];
+    factor_0_x2z = tmp*work_basis[ibasis0*20+12];
+    factor_0_xy2 = tmp*work_basis[ibasis0*20+13];
+    //factor_0_xyz += tmp*work_basis[ibasis0*20+14];
+    factor_0_xz2 = tmp*work_basis[ibasis0*20+15];
+    factor_0_y3 = tmp*work_basis[ibasis0*20+16];
+    factor_0_y2z = tmp*work_basis[ibasis0*20+17];
+    factor_0_yz2 = tmp*work_basis[ibasis0*20+18];
+    factor_0_z3 = tmp*work_basis[ibasis0*20+19];
 
-    factor_0_xz += tmp_x*work_basis[ibasis0*20+3] + tmp*work_basis[ibasis0*20+6];
-    factor_0_x2z += tmp_x*work_basis[ibasis0*20+3] + tmp*work_basis[ibasis0*20+6];
-    factor_x_z += tmp_x*work_basis[ibasis0*20+3] + tmp*work_basis[ibasis0*20+6];
-    factor_x_xz += tmp_x*work_basis[ibasis0*20+3] + tmp*work_basis[ibasis0*20+6];
-    factor_x2_z += tmp_x*work_basis[ibasis0*20+3] + tmp*work_basis[ibasis0*20+6];
+    factor_x_x = tmp_x*work_basis[ibasis0*20+1];
+    factor_x_y = tmp_x*work_basis[ibasis0*20+2];
+    factor_x_z = tmp_x*work_basis[ibasis0*20+3];
+    factor_y_x = tmp_y*work_basis[ibasis0*20+1];
+    factor_y_y = tmp_y*work_basis[ibasis0*20+2];
+    factor_y_z = tmp_y*work_basis[ibasis0*20+3];
+    factor_z_x = tmp_z*work_basis[ibasis0*20+1];
+    factor_z_y = tmp_z*work_basis[ibasis0*20+2];
+    factor_z_z = tmp_z*work_basis[ibasis0*20+3];
 
-    factor_0_xy += tmp*work_basis[ibasis0*20+2];
-    factor_0_xy2 += tmp*work_basis[ibasis0*20+2];
-    factor_y_x += tmp*work_basis[ibasis0*20+2];
-    factor_y_xy += tmp*work_basis[ibasis0*20+2];
-    factor_y2_x += tmp*work_basis[ibasis0*20+2];
+    //factor_x_x2 += 2.0*tmp_x*work_basis[ibasis0*20+1];
+    factor_x_x2 = tmp_x*work_basis[ibasis0*20+4];
+    factor_x_xy = tmp_x*work_basis[ibasis0*20+5];
+    factor_x_xz = tmp_x*work_basis[ibasis0*20+6];
+    factor_y_xy = tmp_y*work_basis[ibasis0*20+5];
+    factor_y_y2 = tmp_y*work_basis[ibasis0*20+7];
+    factor_y_yz = tmp_y*work_basis[ibasis0*20+8];
+    factor_z_xz = tmp_z*work_basis[ibasis0*20+6];
+    factor_z_yz = tmp_z*work_basis[ibasis0*20+8];
+    factor_z_z2 = tmp_z*work_basis[ibasis0*20+9];
+    factor_x2_x = tmp_x2*work_basis[ibasis0*20+1];
+    factor_x2_y = tmp_x2*work_basis[ibasis0*20+2];
+    factor_x2_z = tmp_x2*work_basis[ibasis0*20+3];
+    factor_y2_x = tmp_y2*work_basis[ibasis0*20+1];
+    factor_y2_y = tmp_y2*work_basis[ibasis0*20+2];
+    factor_y2_z = tmp_y2*work_basis[ibasis0*20+3];
+    factor_z2_x = tmp_z2*work_basis[ibasis0*20+1];
+    factor_z2_y = tmp_z2*work_basis[ibasis0*20+2];
+    factor_z2_z = tmp_z2*work_basis[ibasis0*20+3];
 
-    factor_yx += tmp_y*work_basis[ibasis0*20+1] + tmp*work_basis[ibasis0*20+5];
-    factor_yy += tmp_y*work_basis[ibasis0*20+2] + tmp*work_basis[ibasis0*20+7];
-    factor_yz += tmp_y*work_basis[ibasis0*20+3] + tmp*work_basis[ibasis0*20+8];
-    factor_z0 += tmp*work_basis[ibasis0*20+3];
-    factor_zx += tmp_z*work_basis[ibasis0*20+1] + tmp*work_basis[ibasis0*20+6];
-    factor_zy += tmp_z*work_basis[ibasis0*20+2] + tmp*work_basis[ibasis0*20+8];
-    factor_zz += tmp_z*work_basis[ibasis0*20+3] + tmp*work_basis[ibasis0*20+9];
-    rho_x += tmp_x*lap_ao;
-    rho_y += tmp_y*lap_ao;
-    rho_z += tmp_z*lap_ao;
+    //cd
+    //factor_0x factor_xx factor_xy factor_xz 
+    //factor_0y factor_yx factor_yy factor_yz 
+    //factor_0z factor_zx factor_zy factor_zz
+
+    result += (factor_x2_x + 2.0*factor_x_x2 + factor_0_x3)*factor_0x;
+    result += (factor_x2_y + 2.0*factor_x_xy + factor_0_x2y)*factor_0y;
+    result += (factor_x2_z + 2.0*factor_x_xz + factor_0_x2z)*factor_0z;
+    result += (factor_y2_x + 2.0*factor_y_xy + factor_0_xy2)*factor_0x;
+    result += (factor_y2_y + 2.0*factor_y_y2 + factor_0_y3)*factor_0y;
+    result += (factor_y2_z + 2.0*factor_y_yz + factor_0_y2z)*factor_0z;
+    result += (factor_z2_x + 2.0*factor_z_xz + factor_0_xz2)*factor_0x;
+    result += (factor_z2_y + 2.0*factor_z_yz + factor_0_yz2)*factor_0y;
+    result += (factor_z2_z + 2.0*factor_z_z2 + factor_0_z3)*factor_0z;
  
+    result += (factor_x_x + factor_0_x2)*factor_xx;
+    result += (factor_x_y + factor_0_xy)*factor_xy;
+    result += (factor_x_z + factor_0_xz)*factor_xz;
+    result += (factor_y_x + factor_0_xy)*factor_yx;
+    result += (factor_y_y + factor_0_y2)*factor_yy;
+    result += (factor_y_z + factor_0_yz)*factor_yz;
+    result += (factor_z_x + factor_0_xz)*factor_zx;
+    result += (factor_z_y + factor_0_yz)*factor_zy;
+    result += (factor_z_z + factor_0_z2)*factor_zz;
   }
-  /*output = 2*rho_x;
-  output += 2*rho_y;
-  output += 2*rho_z;*/
-  output[0] += 2*rho_x;
+  *output = 8.0*result;
+  /*output[0] += 2*rho_x;
   output[1] += 2*rho_y;
-  output[2] += 2*rho_z;
+  output[2] += 2*rho_z;*/
   //output[3] += 2*rho_yy;
   //output[4] += 2*rho_yz;
   //output[5] += 2*rho_zz;
-  //printf("Hola\n");
+  //printf("Hola=%f\n", result);
+  //printf("Hola=%f\n", *output);
+  /*printf("factor_0x=%f, factor_xx=%f, factor_xy=%f, factor_xz=%f\n", factor_0x, factor_xx, factor_xy, factor_xz);
+  printf("factor_0y=%f, factor_yx=%f, factor_yy=%f, factor_yz=%f\n", factor_0y, factor_yx, factor_yy, factor_yz);
+  printf("factor_0z=%f, factor_zx=%f, factor_zy=%f, factor_zz=%f\n", factor_0z, factor_zx, factor_zy, factor_zz);*/
 }
 
 
