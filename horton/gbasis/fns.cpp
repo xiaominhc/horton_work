@@ -1644,85 +1644,74 @@ void GB1DMGridNabla4Fn::compute_point_from_dm(double* work_basis, double* dm,
                                                double epsilon, double* dmmaxrow) {
   // The density Nabla4 is computed in `point` using the results in work_basis (basis
   // function values and their first and second derivatives).
-  double nabla4_ao, nabla4_rho = 0, lap_ao;
-  double nabla3_x_ao, nabla3_y_ao, nabla3_z_ao;
+  double result = 0;
+  double lap, tmp, tmp_x, tmp_y, tmp_z;
+  double tmp_x2, tmp_y2, tmp_z2;
+  double tmp_xy, tmp_xz, tmp_yz;
+
   //XHC Atomic Orbital b
   for (long ibasis0=0; ibasis0 < nbasis; ibasis0++) {
-    double tmp1 = 0;
-    double tmp2_x = 0, tmp2_y = 0, tmp2_z = 0;
-    double tmp3 = 0;
-    double tmp4_x = 0, tmp4_y = 0, tmp4_z = 0;
-    double tmp4_xx = 0, tmp4_xy= 0, tmp4_xz = 0;
-    double tmp4_yy = 0, tmp4_yz = 0, tmp4_zz = 0;
+    tmp = 0;
+    tmp_x = 0;
+    tmp_y = 0;
+    tmp_z = 0;
+    tmp_x2 = 0;
+    tmp_xy = 0;
+    tmp_xz = 0;
+    tmp_y2 = 0;
+    tmp_yz = 0;
+    tmp_z2 = 0;
     //XHC Atomic Orbital a
     for (long ibasis1=0; ibasis1 < nbasis; ibasis1++) {
       //XHC row only has one value (scalar) and tmp has 3 (gradient is vector)
-      //XHC First term P_ab*AO_a
-      tmp1 += work_basis[ibasis1*35]*dm[ibasis0*nbasis+ibasis1];
-      //XHC Second term P_ab*grad_AO_a
-      tmp2_x += work_basis[ibasis1*35+1]*dm[ibasis0*nbasis+ibasis1];
-      tmp2_y += work_basis[ibasis1*35+2]*dm[ibasis0*nbasis+ibasis1];
-      tmp2_z += work_basis[ibasis1*35+3]*dm[ibasis0*nbasis+ibasis1];
-      //XHC Third term P_ab*lap_AO_a
-      lap_ao = work_basis[ibasis1*35+4] + work_basis[ibasis1*35+7] + work_basis[ibasis1*35+9];
-      tmp3 += lap_ao;
-      //XHC Fourth term P_ab*lap(grad_AO_a*grad_AO_b)
-      tmp4_x += work_basis[ibasis1*35+10];
-      tmp4_x += work_basis[ibasis1*35+13];
-      tmp4_x += work_basis[ibasis1*35+15];
-      tmp4_y += work_basis[ibasis1*35+11];
-      tmp4_y += work_basis[ibasis1*35+16];
-      tmp4_y += work_basis[ibasis1*35+18];
-      tmp4_z += work_basis[ibasis1*35+12];
-      tmp4_z += work_basis[ibasis1*35+17];
-      tmp4_z += work_basis[ibasis1*35+19];
-      tmp4_xx += work_basis[ibasis1*35+4];
-      tmp4_xy += 2*work_basis[ibasis1*35+5];
-      tmp4_xz += 2*work_basis[ibasis1*35+6];
-      tmp4_yy += 2*work_basis[ibasis1*35+7];
-      tmp4_yz += 2*work_basis[ibasis1*35+8];
-      tmp4_zz += work_basis[ibasis1*35+9];
+      //XHC P_ab*AO_a
+      tmp += work_basis[ibasis1*35]*dm[ibasis0*nbasis+ibasis1];
+      tmp_x += work_basis[ibasis1*35+1]*dm[ibasis0*nbasis+ibasis1];
+      tmp_y += work_basis[ibasis1*35+2]*dm[ibasis0*nbasis+ibasis1];
+      tmp_z += work_basis[ibasis1*35+3]*dm[ibasis0*nbasis+ibasis1];
+      tmp_x2 += work_basis[ibasis1*35+4]*dm[ibasis0*nbasis+ibasis1];
+      tmp_xy += work_basis[ibasis1*35+5]*dm[ibasis0*nbasis+ibasis1];
+      tmp_xz += work_basis[ibasis1*35+6]*dm[ibasis0*nbasis+ibasis1];
+      tmp_y2 += work_basis[ibasis1*35+7]*dm[ibasis0*nbasis+ibasis1];
+      tmp_yz += work_basis[ibasis1*35+8]*dm[ibasis0*nbasis+ibasis1];
+      tmp_z2 += work_basis[ibasis1*35+9]*dm[ibasis0*nbasis+ibasis1];
     } 
- 
-    //XHC First term P_ab*AO_a*nabla4_AO_b
-    nabla4_ao = work_basis[ibasis0*35+20];
-    nabla4_ao += 2*work_basis[ibasis0*35+23];
-    nabla4_ao += 2*work_basis[ibasis0*35+25];
-    nabla4_ao += work_basis[ibasis0*35+30];
-    nabla4_ao += 2*work_basis[ibasis0*35+32];
-    nabla4_ao += work_basis[ibasis0*35+34];
-    nabla4_rho += tmp1*nabla4_ao;
-
-    //XHC Second term P_ab*grad_AO_a*nabla3_AO_b
-    nabla3_x_ao = work_basis[ibasis0*35+10];
-    nabla3_x_ao += work_basis[ibasis0*35+13];
-    nabla3_x_ao += work_basis[ibasis0*35+15];
-    nabla4_rho += 2*tmp2_x*nabla3_x_ao;
-    nabla3_y_ao = work_basis[ibasis0*35+11];
-    nabla3_y_ao += work_basis[ibasis0*35+16];
-    nabla3_y_ao += work_basis[ibasis0*35+18];
-    nabla4_rho += 2*tmp2_y*nabla3_y_ao;
-    nabla3_z_ao = work_basis[ibasis0*35+12];
-    nabla3_z_ao += work_basis[ibasis0*35+17];
-    nabla3_z_ao += work_basis[ibasis0*35+19];
-    nabla4_rho += 2*tmp2_z*nabla3_z_ao;
     
-    //XHC Third term P_ab*lap_AO_a*lap_AO_b
-    lap_ao = work_basis[ibasis0*20+4] + work_basis[ibasis0*20+7] + work_basis[ibasis0*20+9];
-    nabla4_rho += tmp3*lap_ao;
- 
-    //XHC Fourth term P_ab*lap(grad_AO_a*grad_AO_b)
-    nabla4_rho += 2*tmp4_x*work_basis[ibasis0*35+1];
-    nabla4_rho += 2*tmp4_y*work_basis[ibasis0*35+2];
-    nabla4_rho += 2*tmp4_z*work_basis[ibasis0*35+3];
-    nabla4_rho += 2*tmp4_xx*work_basis[ibasis0*35+4];
-    nabla4_rho += 2*tmp4_xy*work_basis[ibasis0*35+5];
-    nabla4_rho += 2*tmp4_xz*work_basis[ibasis0*35+6];
-    nabla4_rho += 2*tmp4_yy*work_basis[ibasis0*35+7];
-    nabla4_rho += 2*tmp4_yz*work_basis[ibasis0*35+8];
-    nabla4_rho += 2*tmp4_zz*work_basis[ibasis0*35+9];
+    lap = 3*work_basis[ibasis0*35+4];
+    lap += 2*work_basis[ibasis0*35+7];
+    lap += 2*work_basis[ibasis0*35+9];
+    result += tmp_x2*lap;
+    lap = 3*work_basis[ibasis0*35+7];
+    lap += 2*work_basis[ibasis0*35+9];
+    result += tmp_y2*lap;
+    result += tmp_z2*3*work_basis[ibasis0*35+9];
+    result += 4*tmp_xy*work_basis[ibasis0*35+5];
+    result += 4*tmp_xz*work_basis[ibasis0*35+6];
+    result += 4*tmp_yz*work_basis[ibasis0*35+8];
+    lap = work_basis[ibasis0*35+10];
+    lap += work_basis[ibasis0*35+13];
+    lap += work_basis[ibasis0*35+15];
+    result += 4*tmp_x*lap;
+    lap = work_basis[ibasis0*35+11];
+    lap += work_basis[ibasis0*35+16];
+    lap += work_basis[ibasis0*35+18];
+    result += 4*tmp_y*lap;
+    lap = work_basis[ibasis0*35+12];
+    lap += work_basis[ibasis0*35+17];
+    lap += work_basis[ibasis0*35+19];
+    result += 4*tmp_z*lap;
+    lap = work_basis[ibasis0*35+20];
+    lap += work_basis[ibasis0*35+23];
+    lap += work_basis[ibasis0*35+25];
+    lap += work_basis[ibasis0*35+30];
+    lap += work_basis[ibasis0*35+32];
+    lap += work_basis[ibasis0*35+23];
+    lap += work_basis[ibasis0*35+34];
+    lap += work_basis[ibasis0*35+32];
+    lap += work_basis[ibasis0*35+25];
+    result += tmp*lap;
   }
-  *output += 2*nabla4_rho;
+  *output += 2*result;
   //output[1] += 2*rho_xy;
   //output[2] += 2*rho_xz;
   //output[3] += 2*rho_yy;
