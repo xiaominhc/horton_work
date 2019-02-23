@@ -71,14 +71,14 @@ def test_gauss_derivative_s():
         0.00000000, -0.282601, 0.347644, -0.269144, 0.112143])
 
     # relative errors for the bigger ones
-    print result
-    print check 
+    #print result
+    #print check 
     big_mask = abs(check) > 1e-10
     errors = (result[big_mask] - check[big_mask])/check[big_mask]
     max_error = abs(errors).max()
     rms_error = np.sqrt((errors**2).mean())
-    assert max_error < 1e-6
-    assert rms_error < 1e-6
+    assert max_error < 1e-5
+    assert rms_error < 1e-5
 
 #    # absolute errors for the smaller ones
 #    small_mask = abs(check) > 1e-10

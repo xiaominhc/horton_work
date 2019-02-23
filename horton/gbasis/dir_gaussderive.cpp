@@ -37,7 +37,7 @@ double dir_gaussian_derivative(const double* r, const double* atom, long int* n,
         Value of the specified derivative of the gaussian function.
     """*/
     int order = derx + dery + derz;
-    //printf("hola si entro");
+    //printf("hola si entro derx %d, dery %d, derz %d \n", derx, dery, derz);
  
     // Evaluate distance between point and nucleus
     double poly[4];
@@ -49,11 +49,11 @@ double dir_gaussian_derivative(const double* r, const double* atom, long int* n,
     poly[1] = atom[0] - r[0];
     poly[2] = atom[1] - r[1];
     poly[3] = atom[2] - r[2];
-    /*printf("reset\n");
-    printf("poly_work[0] = %f\n", poly[0]);
-    printf("poly_work[1] = %f\n", poly[1]);
-    printf("poly_work[2] = %f\n", poly[2]);
-    printf("poly_work[3] = %f\n", poly[3]);*/
+    //printf("reset\n");
+    //printf("poly_work[0] = %f\n", poly[0]);
+    //printf("poly_work[1] = %f\n", poly[1]);
+    //printf("poly_work[2] = %f\n", poly[2]);
+    //printf("poly_work[3] = %f\n", poly[3]);
 
 
 
@@ -151,7 +151,7 @@ double dir_gaussian_derivative(const double* r, const double* atom, long int* n,
     // Iterate over derivatives of gaussian function
     int idx = 0;
     for (int i = 0; i < order; i++) {
-      //print "wasabi i", i+1, " of order", order
+      //printf("wasabi i+1 %d of order %d \n", i+1, order);
       int nelem = workdim[order - i - 1];
       for (int j = 0; j < pow(2,i); j++) {
         //print "   "
@@ -160,7 +160,7 @@ double dir_gaussian_derivative(const double* r, const double* atom, long int* n,
         //print "wasabi i=", i,"wasabi j=", j, "wasabi idx=", idx, "offsetidx=", offset[idx]
         // Derive toward x
         if (derx > i) {
-          //print "entra a x"
+          //printf( "entra a x\n");
           offset[2*idx+1] = offset[idx] + (nelem + 1)/2;
           tmp_nx[2*idx+1] = tmp_nx[idx] + 1;
           //print "offset[", 2*idx+1, "]=", offset[2*idx+1]
@@ -168,11 +168,22 @@ double dir_gaussian_derivative(const double* r, const double* atom, long int* n,
           tmp_nx[2*idx+2] = tmp_nx[idx] - 1;
           //print "offset[", 2*idx+2, "]=", offset[2*idx+2]
           work_cart[offset[2*idx+1]] = pre0_h*poly[1]*work_cart[offset[idx]];
+          //printf("work_cart[%d[%d]] = %f*%f*%f = %f[%d[%d]] \n", offset[2*idx+1], 2*idx+1, pre0_h, poly[1], work_cart[offset[idx]], work_cart[offset[2*idx+1]], offset[idx], idx);
           if (poly[1] == 0.0) {
-          work_cart[offset[2*idx+2]] = 0.0;
+            work_cart[offset[2*idx+2]] = 0.0;
+            //printf( "poly[1] es 0\n");
+            if (tmp_nx[idx]-1 == 0) {
+              //printf( "tmp_nx es 0\n");
+              work_cart[offset[2*idx+2]] = pow(pre0_h, idx);
+              work_cart[offset[2*idx+2]] *= pow(poly[2], n[1]);
+              work_cart[offset[2*idx+2]] *= pow(poly[3], n[2]);
+              work_cart[offset[2*idx+2]] *= pre0;
+            }
+            //printf("work_cart[%d[%d]] = %f*%f*%f = %f[%d[%d]] \n", offset[2*idx+2], 2*idx+2, pre0_h, poly[1], work_cart[offset[idx]], work_cart[offset[2*idx+2]], offset[idx], idx);
           }
           else {
-          work_cart[offset[2*idx+2]] = tmp_nx[idx]/poly[1]*work_cart[offset[idx]];
+            work_cart[offset[2*idx+2]] = tmp_nx[idx]/poly[1]*work_cart[offset[idx]];
+            //printf("work_cart[%d[%d]] = %f*%f*%f = %f[%d[%d]] \n", offset[2*idx+2], 2*idx+2, pre0_h, poly[1], work_cart[offset[idx]], work_cart[offset[2*idx+2]], offset[idx], idx);
           }
           tmp_ny[2*idx+1] = tmp_ny[idx];
           tmp_ny[2*idx+2] = tmp_ny[idx];
@@ -181,7 +192,7 @@ double dir_gaussian_derivative(const double* r, const double* atom, long int* n,
         }
         // Derive toward y
         else if (dery>(i-derx)) {
-          //print "entra a y"
+          //printf("entra a y\n");
           offset[2*idx+1] =offset[idx] + (nelem + 1)/2;
           tmp_ny[2*idx+1] = tmp_ny[idx] + 1;
           //print "offset[", 2*idx+1, "]=", offset[2*idx+1]
@@ -190,10 +201,17 @@ double dir_gaussian_derivative(const double* r, const double* atom, long int* n,
           //print "offset[", 2*idx+2, "]=", offset[2*idx+2]
           work_cart[offset[2*idx+1]] = pre0_h*poly[2]*work_cart[offset[idx]];
           if (poly[2] == 0.0) {
-          work_cart[offset[2*idx+2]] = 0.0;
+            work_cart[offset[2*idx+2]] = 0.0;
+            if (tmp_ny[idx]-1 == 0) {
+              //printf( "tmp_nx es 0\n");
+              work_cart[offset[2*idx+2]] = pow(pre0_h, idx);
+              work_cart[offset[2*idx+2]] *= pow(poly[1], n[0]);
+              work_cart[offset[2*idx+2]] *= pow(poly[3], n[2]);
+              work_cart[offset[2*idx+2]] *= pre0;
+            }
           }
           else {
-          work_cart[offset[2*idx+2]] = tmp_ny[idx]/poly[2]*work_cart[offset[idx]];  
+            work_cart[offset[2*idx+2]] = tmp_ny[idx]/poly[2]*work_cart[offset[idx]];  
           }
           tmp_nx[2*idx+1] = tmp_nx[idx];
           tmp_nx[2*idx+2] = tmp_nx[idx];
@@ -202,7 +220,7 @@ double dir_gaussian_derivative(const double* r, const double* atom, long int* n,
         }
         // Derive toward z
         else {
-          //print "entra a z"
+          //printf("entra a z\n");
           offset[2*idx+1] =offset[idx] + (nelem + 1)/2;
           tmp_nz[2*idx+1] = tmp_nz[idx] + 1;
           //print "offset[", 2*idx+1, "]=", offset[2*idx+1]
@@ -211,10 +229,17 @@ double dir_gaussian_derivative(const double* r, const double* atom, long int* n,
           //print "offset[", 2*idx+2, "]=", offset[2*idx+2]
           work_cart[offset[2*idx+1]] = pre0_h*poly[3]*work_cart[offset[idx]];
           if (poly[3] == 0.0) {
-          work_cart[offset[2*idx+2]] = 0.0;
+            work_cart[offset[2*idx+2]] = 0.0;
+            if (tmp_nz[idx]-1 == 0) {
+              //printf( "tmp_nx es 0\n");
+              work_cart[offset[2*idx+2]] = pow(pre0_h, idx);
+              work_cart[offset[2*idx+2]] *= pow(poly[1], n[0]);
+              work_cart[offset[2*idx+2]] *= pow(poly[2], n[1]);
+              work_cart[offset[2*idx+2]] *= pre0;
+            }
           }
           else {
-          work_cart[offset[2*idx+2]] = tmp_nz[idx]/poly[3]*work_cart[offset[idx]];
+            work_cart[offset[2*idx+2]] = tmp_nz[idx]/poly[3]*work_cart[offset[idx]];
           }
           tmp_nx[2*idx+1] = tmp_nx[idx];
           tmp_nx[2*idx+2] = tmp_nx[idx];
@@ -240,6 +265,6 @@ double dir_gaussian_derivative(const double* r, const double* atom, long int* n,
     if (order==0) {
       result = work_cart[offset[0]];
     }
-    printf("result=%f\n",result);
+    //printf("result=%f\n",result);
     return result;
 }
